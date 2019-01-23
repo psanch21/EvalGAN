@@ -1,5 +1,18 @@
 # EvalGAN
 Official code for Out-of-Sample Testing for GANs by ....
+
+## Table of Contents
+
+   * [EvalGAN](#evalgan)
+      * [Installation](#installation)
+      * [Parameters](#parameters)
+      * [Methods of EvalGAN](#methods-of-evalgan)
+         * [Normalize/Denormalize data](#normalizedenormalize-data)
+         * [Quality Metric](#quality-metric)
+      * [Usage example with Images](#usage-example-with-images)
+      * [Toy Example Results](#toy-example-results)
+      * [Built With](#built-with)
+
 ## Installation
 
 ```
