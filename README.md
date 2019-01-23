@@ -1,72 +1,152 @@
 # EvalGAN
-Official code for .... by ....
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
-
-### Prerequisites
-
-A list of the required packages is available in requirements.txt. They can installed using following command
+Official code for Out-of-Sample Testing for GANs by ....
+## Installation
 
 ```
-pip install -r requirements.txt
+git clone hattps://github.com/anonymous/EvalGAN
+cd EvalGAN
+pip3 install -r requirements.txt
 ```
 
-### GPU
+Throughout this document we will refer to the generator network as G
 
-A step by step series of examples that tell you how to get a development env running
+## Parameters
+Here you may find a description of the parameters of the EvalGAN object:
 
-Say what the step will be
+- `input_G_name`: Placeholder's name of the input noise to G.
+- `output_G_name`: Name of the tensor in G holding the generated data.
+- `batch_size`:  Batch size of the trained GAN.
+- `z_dim`: Dimension of the noise vector.
+- `z_init`: Initialization for the noise vector.
+- `constraint`: Select constraint to be applied during optimization (Optional)
+- `learning_rate`: Initialization for the noise vector.
+- `checkpoint_dir`: Path to the trained GAN checkpoint and meta data.
+- `output_dir`: Folder to save results.
+- `model_name`: Name of the model evaluated using EvalGAN
+
+## Methods of EvalGAN
+
+Here you will find the methods you may need to modify in order to fit your data type. All these methods can be found in `evalGAN.py`
+
+### Normalize/Denormalize data
+Be sure that after normalization your data match the format of the
+ output of G.
+```
+def normalize_data(self, data):
+    return data
+
+def denormalize_data(self, data):
+    if(data.max()< 1.01 and data.min() < -0.01):
+        data =  (data+1.)*127.5
+    elif(data.max()< 1.01 and data.min() > -0.01):
+        data =  (data)*255.
+
+    if(data.shape[-1]>3):
+        data = np.transpose(data,(0,2,3,1))
+    return data.astype(int)
+```
+
+### Quality Metric
+
+Metric to measure how similar are two samples of your dataset. In this example we show the Peak SNR (PSNR) that can be used for images. Please notice this method receives two arrays with shape [n_samples,...]
+```
+def dist(self, x_test, x_recons):
+    mse = np.mean((x_test-x_recons)**2, (1,2,3))
+    return 10*np.log10(255**2/mse)
+```
+
+The following measure select the loss function to use during optimization. Notice it receives two tensors.
+
 
 ```
-Give the example
+def loss_function(self, x_real, x_recons):
+    return tf.reduce_mean(tf.reduce_sum(tf.square(x_real - x_recons),[1,2,3]))
 ```
 
-And repeat
 
+## Usage example with Images
+NOTE: the use of GPU is recommended.
+
+
+First you need to load your n samples in a numpy array
 ```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
+x_test = get_your_data() # shape: [n,h,w,c]
 ```
 
-### And coding style tests
-
-Explain what these tests test and why
+Then, fill the necessary parameters to locate your trained GAN, identify the input (plus its dimension) and output  tensors of G,... This is a possible configuration
 
 ```
-Give an example
+z_dim=256
+evalGAN = EvalGAN(input_G_name='z',
+                  output_G_name='generator/out:0',
+                  batch_size=64,
+                  z_dim=z_dim,
+                  z_init=tf.initializers.random_normal(0.,1.),
+                  constraint=lambda t: tf.clip_by_norm(t,  np.sqrt(z_dim)),
+                  learning_rate=5e-3,
+                  beta1=0.9,
+                  checkpoint_dir='./checkpoint_folder',
+                  output_dir='./result_folder',
+                  model_name='GAN')
 ```
-## Results
+
+Then load the samples in which you want to evaluate the GAN and set any additional placeholder your network may need
+
+```
+evalGAN.set_data(x_test)
+evalGAN.add_placeholder('Placeholder1', False)
+evalGAN.add_placeholder('Placeholder2', 0.5)
+```
+Now, we are ready to solve the optimization problem to find the best reconstruction and its associated input vector. Be aware this is an optimization per samples.
+```
+evalGAN.fit(epochs=3, early_stopping=1, restore=1)
+```
+
+To obtain the estimated sample loglikelihood, select the range of sigma, that is the region around the inferred input noise, you would like to explore. For the non-isotropic approximation select the maximum number of noise samples to consider and a choose threshold to ensure that two samples are indistinguishable. In this example, we select as T a PSNR=40.
+
+```
+sigma_list = np.linspace(0.001,0.2,100)
+
+evalGAN.analysis_isotropic(sigma_list, N=128)
+evalGAN.analysis_non_isotropic( sigma_list, N=1000,N_max=10000, T=40)
+```
+
+Finally, get the results.
+
+```
+evalGAN_SN.print_results() # Returns the PSNR and ll per sample
+f = evalGAN_SN.plot()
+```
+
+
+## Toy Example Results
+We have trained the SNDCGAN and WGANGP with CIFAR10 and used 50 test samples with EvalGAN.
+
+
+![alt text](images/evalGAN_c10GP.png)
+![alt text](images/evalGAN_c10SN.png)
+![alt text](images/evalGAN_scatter.png)
+```
+              SNDCGAN                
+--------------------------------
+Samples       |  PSNR  |  LL(x)
+Sample(0/50)  |  22.0  |  -459.97
+Sample(1/50)  |  23.3  |  -486.07
+Sample(2/50)  |  25.9  |  -432.07
+Sample(3/50)  |  24.9  |  -428.88
+Sample(4/50)  |  23.3  |  -471.4
+Sample(5/50)  |  26.1  |  -434.18
+```
 
 ## Built With
 
 * [TensorFlow](https://www.tensorflow.org/) - Open source software library for numerical computation using data-flow graphs
 * [Python 3.6.4](https://www.python.org/downloads/release/python-364/) - Dependency Management
 
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
+<!--
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Anonymous**
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
@@ -78,4 +158,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 * Hat tip to anyone whose code was used
 * Inspiration
-* etc
+* etc -->
