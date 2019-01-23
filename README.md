@@ -111,13 +111,24 @@ evalGAN.analysis_isotropic(sigma_list, N=128)
 evalGAN.analysis_non_isotropic( sigma_list, N=1000,N_max=10000, T=40)
 ```
 
-Finally, get the results.
+We get the results with
 
 ```
-evalGAN_SN.print_results() # Returns the PSNR and ll per sample
+evalGAN.print_results() # Returns the PSNR and ll per sample
 f = evalGAN_SN.plot()
 ```
 
+We can compare the EvalGAN scatter plot of several models as follows
+
+```
+data_SN = evalGAN_SN.get_scatter_data()
+data_GP = evalGAN_GP.get_scatter_data()
+
+utils.plot_scatter(data_SN, ax, label=evalGAN_SN.model_name)
+utils.plot_scatter(data_GP, ax, label=evalGAN_GP.model_name)
+
+utils.save_fig(f,'evalGAN_scatter.png', latex=False)
+```
 
 ## Toy Example Results
 We have trained the SNDCGAN and WGANGP with CIFAR10 and used 50 test samples with EvalGAN.
