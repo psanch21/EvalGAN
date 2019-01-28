@@ -1,5 +1,5 @@
 # EvalGAN
-Official code for Out-of-Sample Testing for GANs by Pablo Sánchez-Martín, Pablo M. Olmos and Fernando Perez-Cruz.
+Official code for Out-of-Sample Testing for GANs by Pablo Sánchez-Martín, Pablo M. Olmos and Fernando Perez-Cruz. For any question or help to run the code please feel free to contact us at <psanch@tsc.uc3m.es>
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ Official code for Out-of-Sample Testing for GANs by Pablo Sánchez-Martín, Pabl
 ## Installation
 
 ```
-git clone hattps://github.com/anonymous/EvalGAN
+git clone https://github.com/psanch21/EvalGAN
 cd EvalGAN
 pip3 install -r requirements.txt
 ```
@@ -170,16 +170,6 @@ Sample(5/50)  |  26.1  |  -434.18
 <!--
 ## Authors
 
-* **Anonymous**
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc -->
