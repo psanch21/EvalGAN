@@ -1,5 +1,5 @@
 # EvalGAN
-Official code for Out-of-Sample Testing for GANs by ....
+Official code for Out-of-Sample Testing for GANs by Pablo Sánchez-Martín, Pablo M. Olmos and Fernando Perez-Cruz.
 
 ## Table of Contents
 
