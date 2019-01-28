@@ -68,7 +68,7 @@ def dist(self, x_test, x_recons):
     return 10*np.log10(255**2/mse)
 ```
 
-The following measure select the loss function to use during optimization. Notice it receives two tensors.
+The following method select the loss function to use during optimization. Notice it receives two tensors.
 
 
 ```
