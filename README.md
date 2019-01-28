@@ -110,12 +110,12 @@ evalGAN.set_data(x_test)
 evalGAN.add_placeholder('Placeholder1', False)
 evalGAN.add_placeholder('Placeholder2', 0.5)
 ```
-Now, we are ready to solve the optimization problem to find the best reconstruction and its associated input vector. Be aware this is an optimization per samples.
+Now, we are ready to solve the optimization problem to find the best reconstruction and its associated input vector. Be aware this is an optimization per sample.
 ```
 evalGAN.fit(epochs=3, early_stopping=1, restore=1)
 ```
 
-To obtain the estimated sample loglikelihood, select the range of sigma, that is the region around the inferred input noise, you would like to explore. For the non-isotropic approximation select the maximum number of noise samples to consider and a choose threshold to ensure that two samples are indistinguishable. In this example, we select as T a PSNR=40.
+To obtain the estimated sample loglikelihood, select the range of sigma, that is the region around the inferred input noise, you would like to explore. For the non-isotropic approximation select the maximum number of noise samples to consider and choose a threshold to ensure that two samples are indistinguishable. In this example, we select as T a PSNR=40.
 
 ```
 sigma_list = np.linspace(0.001,0.2,100)
