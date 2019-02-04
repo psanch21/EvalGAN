@@ -1,1 +1,11 @@
 gh-md-toc
+c10_SN
+c10_GP
+cifar10
+utils/__pycache__/
+utils/.DS_Store
+__pycache__/
+images/.DS_Store
+.DS_Store
+*.zip
+data/test_batch
