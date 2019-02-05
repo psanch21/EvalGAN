@@ -92,12 +92,11 @@ class EvalGAN():
         return evalGAN_data['z_infer'], evalGAN_data['x_recons']
 
     def get_evalGAN_recons(self):
+        print('EvalGAN Recons Data: {}'.format(self.evalGAN_recons))
+        evalGAN_data = None
         try:
             evalGAN_data = np.load(self.evalGAN_recons)
         except:
-            evalGAN_data = dict()
-            evalGAN_data['z_infer'] = list()
-            evalGAN_data['x_recons'] = list()
             print('EvalGAN recons data not found')
         return evalGAN_data
 
@@ -217,8 +216,9 @@ class EvalGAN():
             tf.global_variables_initializer().run()
 
             new_saver.restore(session,self.latest_checkpoint)
-
-
+            
+            recons_loss = list()
+            print('Starting optimization...')
             for cur_epoch in range(epochs + 1):
 
 
@@ -231,8 +231,8 @@ class EvalGAN():
 
                 if(cur_epoch % 20 == 0 or cur_epoch==0):
                     print('EPOCH: {} | dist: {} '.format(cur_epoch, list_loss[0]))
-
-
+                    
+                recons_loss.append(list_loss[0])
                 #Early stopping
                 if(cur_epoch>50 and enable_es==1 and early_stopping.stop(list_loss[0])):
                     print('Early Stopping!')
@@ -243,7 +243,7 @@ class EvalGAN():
             z_infer =  session.run(self.z)
             x_recons = session.run(self.x_recons)
 
-        return z_infer, x_recons
+        return z_infer, x_recons, recons_loss
 
 
 
@@ -266,22 +266,35 @@ class EvalGAN():
         N = self.x_test.shape[0]
         z_infer = list()
         x_recons = list()
+        loss_recons = list()
         init_n = 0
         if(restore == 1):
             evalGAN_data = self.get_evalGAN_recons()
-            z_infer = list(evalGAN_data['z_infer'])
-            x_recons = list(evalGAN_data['x_recons'])
-            init_n = len(z_infer)
+            if(evalGAN_data is not None):
+                z_infer = list(evalGAN_data['z_infer'])
+                x_recons = list(evalGAN_data['x_recons'])
+                loss_recons = evalGAN_data['loss_recons']
+                init_n = len(z_infer)
+            else:
+                z_infer = list()
+                x_recons = list()
+                loss_recons = list()
+                init_n = 0
 
         for n in range(init_n, N):
             test_sample = self.x_test[n].reshape([1]+self.datum_dims)
             print('Datum {} / {}'.format(n,N))
-            z_in, x_rec = self.train(test_sample, epochs, early_stopping)
+            z_in, x_rec, loss = self.train(test_sample, epochs, early_stopping)
             z_infer.append(z_in)
             x_recons.append(x_rec)
+            loss_recons.append(loss)
             if(n % 10 == 0):
-                np.savez(self.evalGAN_recons, x_recons=np.array(x_recons),z_infer=np.array(z_infer))
-        np.savez(self.evalGAN_recons,  x_recons=np.array(x_recons),z_infer=np.array(z_infer))
+                np.savez(self.evalGAN_recons, x_recons=np.array(x_recons),
+                         z_infer=np.array(z_infer),
+                         loss_recons=loss_recons)
+        np.savez(self.evalGAN_recons,  x_recons=np.array(x_recons),
+                 z_infer=np.array(z_infer),
+                 loss_recons=loss_recons)
 
 
 
