@@ -273,7 +273,7 @@ class EvalGAN():
             if(evalGAN_data is not None):
                 z_infer = list(evalGAN_data['z_infer'])
                 x_recons = list(evalGAN_data['x_recons'])
-                loss_recons = evalGAN_data['loss_recons']
+                loss_recons = list(evalGAN_data['loss_recons'])
                 init_n = len(z_infer)
             else:
                 z_infer = list()
